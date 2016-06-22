@@ -182,6 +182,9 @@ class Readability implements LoggerAwareInterface
         $this->useTidy = $use_tidy && function_exists('tidy_parse_string');
 
         $this->logger = new NullLogger();
+
+        $this->fixEncoding();
+
         $this->loadHtml();
     }
 
@@ -241,6 +244,14 @@ class Readability implements LoggerAwareInterface
     public function addPostFilter($filter, $replacer = '')
     {
         $this->post_filters[$filter] = $replacer;
+    }
+
+    private function fixEncoding()
+    {
+        $matches = [];
+        if (preg_match('|content="text/html; charset=(.+?)"|', $this->html, $matches) && strtolower($matches[1]) !== 'utf-8') {
+            $this->html = mb_convert_encoding($this->html, 'utf-8', $matches[1]);
+        }
     }
 
     /**
